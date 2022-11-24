@@ -4,7 +4,7 @@
 using namespace std;
 
 double g = 0.8;
-
+//Agrego algo
 double f1(double om1, double om2, double v1, double v2, double l1, double l2, double m1, double m2) {
 	double num1 = -g * (2 * m1 + m2) * sin(om1) - m2 * g * sin(om1 - 2 * om2);
 	double num2 = -2 * sin(om1 - om2) * m2 * (v2 * v2 * l2 + v1 * v1 * l1 * cos(om1 - om2));
@@ -35,7 +35,7 @@ int main() {
 	int width = 800;
 	int height = 800;
 
-	sf::RenderWindow window(sf::VideoMode(width, height), "Test");
+	sf::RenderWindow window(sf::VideoMode(width, height), "Pendulo Doble");
 	window.setFramerateLimit(120);
 
 	//Initial Conditions

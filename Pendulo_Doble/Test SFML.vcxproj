@@ -24,6 +24,7 @@
     <ProjectGuid>{60ab196c-a15c-4bc2-a122-94632802a94c}</ProjectGuid>
     <RootNamespace>TestSFML</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Doble Pendulo</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
