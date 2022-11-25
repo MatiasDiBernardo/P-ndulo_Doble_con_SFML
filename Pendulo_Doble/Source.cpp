@@ -4,7 +4,7 @@
 using namespace std;
 
 double g = 0.8;
-//Agrego algo
+
 double f1(double om1, double om2, double v1, double v2, double l1, double l2, double m1, double m2) {
 	double num1 = -g * (2 * m1 + m2) * sin(om1) - m2 * g * sin(om1 - 2 * om2);
 	double num2 = -2 * sin(om1 - om2) * m2 * (v2 * v2 * l2 + v1 * v1 * l1 * cos(om1 - om2));
@@ -31,7 +31,6 @@ int check() {
 }
 
 int main() {
-
 	int width = 800;
 	int height = 800;
 
@@ -54,6 +53,7 @@ int main() {
 	double a2 = 0;
 	string type = "RK4";
 	double h = 0.1;
+	bool state = true;
 		
 	//Mass position
 	float x1 = x_origin + l1 * sin(om1);
@@ -98,48 +98,70 @@ int main() {
 				window.close();
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 				window.close();
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
+				state = false;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::O))
+				state = true;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
+				v1 = 0;
+				v2 = 0;
+				trace.clear();
+			}
+				
+			if (!state && sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+				if (sf::Mouse::getPosition().y < y_origin + c2_pos.y) om2 += 0.05;
+				if (sf::Mouse::getPosition().y > y_origin + c2_pos.y) om2 -= 0.05;
+			}
+
+			if (!state && sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+				if (sf::Mouse::getPosition().y < y_origin + c1_pos.y) om1 += 0.05;
+				if (sf::Mouse::getPosition().y > y_origin + c1_pos.y) om1 -= 0.05;
+			}
 		}
 
 		//Calulations
-		if (type == "Euler") {
-			a1 = f1(om1, om2, v1, v2, l1, l2, m1, m2);
-			a2 = f2(om1, om2, v1, v2, l1, l2, m1, m2);
+		if (state)
+		{
+			if (type == "Euler") 
+			{
+				a1 = f1(om1, om2, v1, v2, l1, l2, m1, m2);
+				a2 = f2(om1, om2, v1, v2, l1, l2, m1, m2);
 
-			v1 += a1; //t=1 per frame
-			v2 += a2;
+				v1 += a1; //t=1 per frame
+				v2 += a2;
 
-			om1 += v1;
-			om2 += v2;
+				om1 += v1;
+				om2 += v2;
+			}
+
+			if (type == "RK4") {
+				double c_a1 = v1;
+				double c_b1 = v2;
+				double c_c1 = f1(om1, om2, v1, v2, l1, l2, m1, m2);
+				double c_d1 = f2(om1, om2, v1, v2, l1, l2, m1, m2);
+
+				double c_a2 = v1 + (h / 2) * c_c1;
+				double c_b2 = v2 + (h / 2) * c_d1;
+				double c_c2 = f1(om1 + (h / 2), om2 + (h / 2) * c_a1, v1 + (h / 2) * c_c1, v2 + (h / 2) * c_d1, l1, l2, m1, m2);
+				double c_d2 = f2(om1 + (h / 2), om2 + (h / 2) * c_b1, v1 + (h / 2) * c_c1, v2 + (h / 2) * c_d1, l1, l2, m1, m2);
+
+				double c_a3 = v1 + (h / 2) * c_c2;
+				double c_b3 = v2 + (h / 2) * c_d2;
+				double c_c3 = f1(om1 + (h / 2), om2 + (h / 2) * c_a2, v1 + (h / 2) * c_c2, v2 + (h / 2) * c_d2, l1, l2, m1, m2);
+				double c_d3 = f2(om1 + (h / 2), om2 + (h / 2) * c_b2, v1 + (h / 2) * c_c2, v2 + (h / 2) * c_d2, l1, l2, m1, m2);
+
+				double c_a4 = v1 + (h / 2) * c_c3;
+				double c_b4 = v2 + (h / 2) * c_d3;
+				double c_c4 = f1(om1 + (h / 2), om2 + (h / 2) * c_a3, v1 + (h / 2) * c_c3, v2 + (h / 2) * c_d3, l1, l2, m1, m2);
+				double c_d4 = f2(om1 + (h / 2), om2 + (h / 2) * c_b3, v1 + (h / 2) * c_c3, v2 + (h / 2) * c_d3, l1, l2, m1, m2);
+
+				om1 = om1 + (h / 6) * (c_a1 + 2 * c_a2 + 2 * c_a3 + c_a4);
+				om2 = om2 + (h / 6) * (c_b1 + 2 * c_b2 + 2 * c_b3 + c_b4);
+
+				v1 = v1 + (h / 6) * (c_c1 + 2 * c_c2 + 2 * c_c3 + c_c4);
+				v2 = v2 + (h / 6) * (c_d1 + 2 * c_d2 + 2 * c_d3 + c_d4);
+			}
 		}
-
-		if (type == "RK4") {
-			double c_a1 = v1;
-			double c_b1 = v2;
-			double c_c1 = f1(om1, om2, v1, v2, l1, l2, m1, m2);
-			double c_d1 = f2(om1, om2, v1, v2, l1, l2, m1, m2);
-
-			double c_a2 = v1 + (h / 2) * c_c1;
-			double c_b2 = v2 + (h / 2) * c_d1;
-			double c_c2 = f1(om1 + (h / 2), om2 + (h / 2) * c_a1, v1 + (h / 2) * c_c1, v2 + (h / 2) * c_d1, l1, l2, m1, m2);
-			double c_d2 = f2(om1 + (h / 2), om2 + (h / 2) * c_b1, v1 + (h / 2) * c_c1, v2 + (h / 2) * c_d1, l1, l2, m1, m2);
-
-			double c_a3 = v1 + (h / 2) * c_c2;
-			double c_b3 = v2 + (h / 2) * c_d2;
-			double c_c3 = f1(om1 + (h / 2), om2 + (h / 2) * c_a2, v1 + (h / 2) * c_c2, v2 + (h / 2) * c_d2, l1, l2, m1, m2);
-			double c_d3 = f2(om1 + (h / 2), om2 + (h / 2) * c_b2, v1 + (h / 2) * c_c2, v2 + (h / 2) * c_d2, l1, l2, m1, m2);
-
-			double c_a4 = v1 + (h / 2) * c_c3;
-			double c_b4 = v2 + (h / 2) * c_d3;
-			double c_c4 = f1(om1 + (h / 2), om2 + (h / 2) * c_a3, v1 + (h / 2) * c_c3, v2 + (h / 2) * c_d3, l1, l2, m1, m2);
-			double c_d4 = f2(om1 + (h / 2), om2 + (h / 2) * c_b3, v1 + (h / 2) * c_c3, v2 + (h / 2) * c_d3, l1, l2, m1, m2);
-
-			om1 = om1 + (h / 6) * (c_a1 + 2 * c_a2 + 2 * c_a3 + c_a4);
-			om2 = om2 + (h / 6) * (c_b1 + 2 * c_b2 + 2 * c_b3 + c_b4);
-
-			v1 = v1 + (h / 6) * (c_c1 + 2 * c_c2 + 2 * c_c3 + c_c4);
-			v2 = v2 + (h / 6) * (c_d1 + 2 * c_d2 + 2 * c_d3 + c_d4);
-		}
-
 		//Update
 		x1 = x_origin + l1 * sin(om1);
 		y1 = y_origin + l1 * cos(om1);
@@ -174,7 +196,6 @@ int main() {
 		window.draw(c2);
 
 		window.display();
-
 	}
 
 	return 0;
